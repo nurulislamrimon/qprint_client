@@ -1,26 +1,35 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Stepper from "./Stepper";
 import { useGetOnlineOrderByIdQuery } from "@/redux/features/online-order/online-orderApi";
 import { formatDate } from "@/constants/formatDate";
 
-const OrderedStep = ({ id }: any) => {
-  const { data } = useGetOnlineOrderByIdQuery(id);
-  const orderStatus = parseFloat(data?.data?.orderStatus);
+interface OrderStatusType {
+  status: string;
+  time: string;
+  _id: string;
+  id: string;
+}
 
-  const [currentStep, setCurrentStep] = React.useState(3);
+const OrderedStep = ({ id }: { id: string }) => {
+  const { data } = useGetOnlineOrderByIdQuery(id);
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    if (data?.data?.orderStatus) {
+      setStep(data?.data?.orderStatus?.length - 1);
+    }
+  }, [data]);
 
   return (
     <div className="mb-10">
       <Stepper
-        currentStep={3}
+        currentStep={step}
         numberOfSteps={4}
-        iconSize={`${50} md:${40}`}
-        iconStroke={1}
+        iconStroke={2}
         customStepStyle={`relative`}
       />
-      <div className="order-track-step-counter">
-        {data?.data?.orderStatus?.map((status: any, index: number) => (
+      <div className="grid grid-cols-4">
+        {data?.data?.orderStatus?.map((status: OrderStatusType) => (
           <div key={status?._id} className="flex flex-col items-center">
             <span className="text-[11px] md:text-[16px] italic">
               {status?.status}

@@ -10,9 +10,9 @@ import { setShippingData } from "@/redux/features/user/shippingAddressSlice";
 import { useState } from "react";
 import Spinner from "@/components/shared/Spinner";
 import { toast } from "react-toastify";
+import { qatarStates } from "@/constants/qatarState";
 
 const ShippingAddress = () => {
-
   const [loading, setLoading] = useState(false);
 
   // add shipping address mutation
@@ -26,6 +26,7 @@ const ShippingAddress = () => {
   const data = useAppSelector((state) => state.updateShippingInfo);
 
   const userData = useAppSelector((state) => state.profileEdit);
+
   const formData = new FormData();
 
   const handleUpdateShippingInfo = async (event: any) => {
@@ -39,12 +40,10 @@ const ShippingAddress = () => {
 
       if (data?.addNewAddress === true) {
         //updating shipping address
-        const res = await updateShippingInfo({ data: formData, id: data?._id });
-
+        const res = await updateShippingInfo({ data: data, id: data?._id });
       } else {
         //adding new shipping address
-        const res = await addShippingInfo({ data: formData });
-
+        const res = await addShippingInfo({ data: data });
       }
       // updating user info
       const updateUserInfo = await updateMe(formData);
@@ -52,7 +51,7 @@ const ShippingAddress = () => {
       toast.success(updateUserInfo?.data?.message);
       console.log(updateUserInfo);
     } catch (err: any) {
-      toast.error(err?.errorMessages)
+      toast.error(err?.errorMessages);
       console.log(err.errorMessages);
     } finally {
       setLoading(false);
@@ -61,10 +60,7 @@ const ShippingAddress = () => {
 
   return (
     <div className="relative">
-      {
-        loading &&
-        <Spinner />
-      }
+      {loading && <Spinner />}
       <h1 className="text-black text-xl mb-5 md:mb-8 lg:mb-8 ">
         Shipping Information
       </h1>
@@ -92,7 +88,7 @@ const ShippingAddress = () => {
           />
           <CustomInput
             label="Phone Number"
-            type="text"
+            type="number"
             name="phoneNumber"
             value={data?.phoneNumber}
             placeholder={""}
@@ -112,16 +108,29 @@ const ShippingAddress = () => {
             }
           />
 
-          <CustomInput
-            label="State"
-            type="text"
-            name="state"
-            value={data?.state}
-            placeholder=""
-            onChange={(e) =>
-              dispatch(setShippingData({ [e.target.name]: e.target.value }))
-            }
-          />
+          <label htmlFor="state">
+            Select State
+            <select
+              value={data?.state}
+              name="state"
+              id="state"
+              onChange={(e) =>
+                dispatch(setShippingData({ [e.target.name]: e.target.value }))
+              }
+              className="w-full border border-gray-200 px-3.5 py-3 focus:outline-none focus:border-fuchsia-800 rounded-md"
+            >
+              {qatarStates?.map((state) => (
+                <option
+                  key={state}
+                  value={state}
+                  selected={state === "Doha"}
+                  defaultValue={"Doha"}
+                >
+                  {state}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <CustomInput
             label="ZipCode"

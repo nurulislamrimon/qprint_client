@@ -15,17 +15,18 @@ import playStore from "@/assets/playstore.svg";
 import appleStore from "@/assets/applestore.svg";
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
+
+
   return (
     <footer className="bg-[#1A1A1A] p-6 ">
       <div className="space-y-5 md:grid md:grid-cols-3 items-center justify-center md:items-start relative text-center py-5 gap-5 md:max-w-[1280px] mx-auto">
         <div className="space-y-5">
-          <div className="flex items-center justify-center">
+          <div className="flex md:justify-start justify-center ">
             <Logo />
           </div>
           <p className="text-sm text-[#999] lg:text-justify">
-            Lorem ipsum dolor sit amet consectetur. Imperdiet aliquet faucibus
-            malesuada vitae. Amet imperdiet pulvinar blandit pulvinar. Quam
-            consectetur aliquam sit libero eu ultrices sed
+            Welcome to Q Print, your one-stop destination for all your printing needs! From business cards to banners, weve got you covered with high-quality printing solutions. Browse our wide selection of products and services, including custom designs and fast turnaround times. At Q Print, were committed to excellence in both print quality and customer service. Let us help bring your ideas to life. Explore our website today and experience the ease and convenience of printing with Q Print.
           </p>
         </div>
         {/* //Footer Links */}
@@ -56,7 +57,8 @@ const Footer = () => {
           />
         </div>
         <div>
-          <div className="flex gap-y-5 gap-x-5 py-10 md:flex-col items-center justify-center">
+          <div className="flex gap-y-5 gap-x-5 py-10 md:flex-col md:items-end md:justify-end items-center
+          justify-center">
             <CombinedComponent
               type="store"
               storeImageSrc={playStore}
@@ -80,7 +82,7 @@ const Footer = () => {
               </p>
             </div>
             {/* //Social Links */}
-            {/* <div className="flex gap-3 md:gap-4 md:pt-14">
+            <div className="flex gap-3 md:gap-4 md:pt-14">
               <CombinedComponent
                 type="social"
                 socialIcon={<Reddit />}
@@ -106,10 +108,10 @@ const Footer = () => {
                 socialIcon={<Facebook />}
                 socialLinkHref="https://www.facebook.com"
               />
-            </div> */}
+            </div>
           </div>
           <p className="text-[#999] text-center md:text-start">
-            Q-Print eCommerce © 2022. All Rights Reserved
+            Q-Print eCommerce © {`${currentYear}`}. All Rights Reserved
           </p>
         </div>
       </div>

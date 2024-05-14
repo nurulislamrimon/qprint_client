@@ -30,7 +30,7 @@ const NewProduct = () => {
             </Link>
           </div>
         </div>
-        <div className="w-full md:place-items-start place-items-center flex items-center gap-y-5 justify-center md:justify-between flex-wrap">
+        <div className="grid grid-cols-product-grid md:gap-6 gap-5 ">
           {
             isLoading ? (
               [...Array(3)].map((_, index) => {

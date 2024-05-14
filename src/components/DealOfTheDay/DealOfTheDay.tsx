@@ -10,12 +10,8 @@ import Link from "next/link";
 import DealsOfTheDaySkeleton from "../shared/Skeleton/DealsOfTheDaySkeleton";
 
 const DealOfTheDay = () => {
-  // <== Get Deal Of The Day Data ==>
   const { data, isLoading } = useGetDealOfTheDayQuery("");
-
-  // <== Get the first deal ==>
   const firstDeal = data?.data?.firstDeal;
-  // <== Get the second deal ==>
   const secondDeal = data?.data?.secondDeal;
 
   return (
@@ -23,89 +19,90 @@ const DealOfTheDay = () => {
       <h2 className="main-text-color text-3xl font-medium mb-7">
         Deals Of The Day
       </h2>
+      <div className="grid md:grid-cols-2 grid-cols-1 md:gap-[30px] gap-2.5">
+        {/* === First Deal === */}
+        {isLoading ? (
+          <DealsOfTheDaySkeleton />
+        ) : (
+          <div className="main-section flex items-center overflow-hidden justify-between bg-[#F4F4F4] gap-5 rounded-xl px-[30px] py-5 flex-1">
+            <div className="flex flex-col md:gap-5 gap-3.5">
+              <div className="flex flex-col gap-2.5">
+                <div className="bg-[#EFD33D] text-center animate-bounce py-1.5 px-3 rounded font-medium text-black w-[80px] ">
+                  <span className="md:text-xs text-[10px]">{firstDeal?.discount}% OFF</span>
+                </div>
+                <div className="flex flex-col md:gap-2 gap-1">
+                  <h2 className="font-semibold [font-size:_clamp(18px,4vw,24px)]  md:line-clamp-2 line-clamp-1">
+                    {firstDeal?.title}
+                  </h2>
+                  <p className=" md:line-clamp-2 line-clamp-1">{firstDeal?.description}</p>
+                </div>
+              </div>
 
-      {
-        isLoading ? (
-          <div className="flex flex-col md:flex-row gap-8 items-center w-full">
-            {
-              [...Array(2)].map((_, index) => {
-                return (
-                  <DealsOfTheDaySkeleton key={index} />
-                )
-              })
-            }
-          </div>
-        ) :
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* === First Deal === */}
-            <div className="main-section flex items-center justify-between bg-[#F4F4F4] rounded-xl p-8 flex-1">
-              <div className=" gap-5">
-                <button className="bg-[#EFD33D] animate-bounce py-1.5 px-3.5 rounded-md font-medium text-black mb-4">
-                  {firstDeal?.discount}% OFF
-                </button>
-                <h2 className="font-semibold [font-size:_clamp(18px,4vw,24px)] mb-4 line-clamp-2 text-wrap">
-                  {firstDeal?.title}
-                </h2>
-                <p className="mb-4 line-clamp-2 text-wrap text-sm md:text-base">
-                  {firstDeal?.description}
-                </p>
-                <Link
-                  href={`${firstDeal?.link}`}
-                  className="text-xs md:text-sm flex items-center justify-center gap-2 py-3 w-2/3 rounded-md uppercase main-bg-color text-white transition hover:translate-x-2 delay-150 whitespace-nowrap"
-                >
-                  {firstDeal?.buttonText}
+              <Link
+                href={`${firstDeal?.link}`}
+              >
+                <button className="text-sm flex items-center justify-center gap-2 py-3 px-3  rounded-md uppercase main-bg-color text-white transition hover:translate-x-2 delay-150 whitespace-nowrap">
+                  <span>
+                    {firstDeal?.buttonText}
+                  </span>
                   <span>
                     <IconArrowRight width={20} height={20} />
                   </span>
-                </Link>
-              </div>
-              <div className="w-[120px] h-[120px] md:w-[230px] md:h-[230px] relative shrink-0">
-                <Image
-                  src={`${imageUrl}${firstDeal?.productPhoto}`}
-                  alt="profile"
-                  fill
-                  sizes="300px"
-                  priority={true}
-                  className="w-full h-full top-0 left-0 object-cover"
-                />
-              </div>
-            </div>
-            {/* === Second Deal === */}
-            <div className="main-section flex items-center justify-between bg-[#191C1F] rounded-xl p-8 flex-1">
-              <div className=" gap-5">
-                <button className="uppercase bg-[#2DA5F3] animate-bounce py-1.5 px-3.5 rounded-md font-medium text-white mb-4 whitespace-nowrap">
-                  {secondDeal?.tag}
                 </button>
-                <h2 className="text-white font-semibold [font-size:_clamp(18px,4vw,24px)] mb-4 text-wrap">
-                  {secondDeal?.title}
-                </h2>
-                <p className="text-white mb-4 text-wrap text-sm md:text-base">
-                  {secondDeal?.description}
-                </p>
-                <Link
-                  href={`${secondDeal?.link}`}
-                  className="text-xs md:text-sm flex items-center justify-center gap-2 py-3 w-2/3 rounded-md uppercase main-bg-color text-white transition hover:translate-x-2 delay-150 whitespace-nowrap"
-                >
-                  {secondDeal?.buttonText}
+              </Link>
+            </div>
+            <div className="w-[150px] h-[150px] md:w-[250px] md:h-[250px] relative">
+              <Image
+                src={`${imageUrl}${firstDeal?.productPhoto}`}
+                alt="deal photo 1"
+                fill
+                className="w-full h-full top-0 left-0 object-cover"
+              />
+            </div>
+          </div>
+        )}
+        {/* === Second Deal === */}
+        {isLoading ? (
+          <DealsOfTheDaySkeleton />
+        ) : (
+          <div className="main-section flex items-center overflow-hidden justify-between bg-[#191C1F] gap-5 rounded-xl px-[30px] py-5 flex-1">
+            <div className="flex flex-col md:gap-5 gap-3.5">
+              <div className="flex flex-col gap-2.5">
+                <div className="animate-bounce w-auto">
+                  <span className="md:text-xs text-[10px] bg-[#2DA5F3] text-center  uppercase py-1.5 px-3 rounded font-medium text-white ">{secondDeal?.tag}</span>
+                </div>
+                <div className="flex flex-col md:gap-2 gap-1 text-white">
+                  <h2 className="font-semibold [font-size:_clamp(18px,4vw,24px)]  md:line-clamp-2 line-clamp-1">
+                    {secondDeal?.title}
+                  </h2>
+                  <p className=" md:line-clamp-2 line-clamp-1">{secondDeal?.description}</p>
+                </div>
+              </div>
+
+              <Link
+                href={`${secondDeal?.link}`}
+              >
+                <button className="text-sm flex items-center justify-center gap-2 py-3 px-3  rounded-md uppercase main-bg-color text-white transition hover:translate-x-2 delay-150 whitespace-nowrap">
+                  <span>
+                    {secondDeal?.buttonText}
+                  </span>
                   <span>
                     <IconArrowRight width={20} height={20} />
                   </span>
-                </Link>
-              </div>
-              <div className="w-[120px] h-[120px] md:w-[230px] md:h-[230px] relative shrink-0">
-                <Image
-                  src={`${imageUrl}${secondDeal?.productPhoto}`}
-                  alt="Promotion Image"
-                  fill
-                  sizes="300px"
-                  priority={true}
-                  className="top-0 left-0 w-full h-full object-cover"
-                />
-              </div>
+                </button>
+              </Link>
+            </div>
+            <div className="w-[150px] h-[150px] md:w-[250px] md:h-[250px] relative ">
+              <Image
+                src={`${imageUrl}${secondDeal?.productPhoto}`}
+                alt="deal photo 1"
+                fill
+                className="w-full h-full top-0 left-0 object-cover"
+              />
             </div>
           </div>
-      }
-
+        )}
+      </div>
     </section>
   );
 };

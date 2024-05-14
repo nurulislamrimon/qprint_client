@@ -27,9 +27,11 @@ const OrderDetails = ({ id }: any) => {
             </h5>
             <div>
               <OrderedItemData
+                orderId={id}
                 orderedItems={data?.data?.orderItems}
                 totalQuantity={data?.data?.totalQuantity}
                 totalPrice={data?.data?.totalPrice}
+                shippingStatus={data?.data?.orderStatus}
               />
             </div>
           </div>

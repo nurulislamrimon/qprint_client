@@ -15,6 +15,9 @@ import quickOrder from "./features/quick-order/quickOrder";
 import filterProductReview from "./features/review/filterProductReview";
 import profileEditSlice from "./features/user/profileEditSlice";
 import multipleOrder from "./features/quick-order/multipleQuickOrder";
+import forgetPasswordSlice from "./features/forgetPassword/forgetPasswordSlice";
+import filterProducts from "./features/products/filterProducts";
+import socialMediaSlice from "./features/social-media/socialMediaSlice";
 
 export const reducer = {
   [baseApi.reducerPath]: baseApi.reducer,
@@ -22,6 +25,7 @@ export const reducer = {
   login: loginSlice,
   addReview: addReviewSlice,
   categoryOption: categoryFilterSlice,
+  productsFilterOptions: filterProducts,
   productByCategory: productsByCategorySlice,
   productByBrandName: brandNameSlice,
   priceRangeSlice: FilterByPriceSlice,
@@ -34,4 +38,6 @@ export const reducer = {
   multipleQuickOrder: multipleOrder,
   filteredProductByReview: filterProductReview,
   profileEdit: profileEditSlice,
+  forgetPassword: forgetPasswordSlice,
+  socialMediaSlice: socialMediaSlice,
 };

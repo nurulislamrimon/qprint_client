@@ -2,11 +2,8 @@ import { formatDate } from "@/constants/formatDate";
 import React from "react";
 import OrderTrackButton from "../Profile/OrderTrackButton";
 import { IconX } from "@tabler/icons-react";
+import Link from "next/link";
 
-// type IPaperSize = {
-//   height: number;
-//   width: number;
-// };
 interface IProps {
   id?: string;
   unit?: string;
@@ -56,8 +53,8 @@ const PringtingOrderHistoryTable = ({
       </div>
 
       {/* == printing information == */}
-      <div className="flex flex-wrap gap-2 md:gap-0 md:flex-nowrap items-center justify-between mb-5">
-        <div className="flex gap-1 md:gap-0 md:flex-col md:w-1/5">
+      <div className="mb-5">
+        <div className="flex gap-1 md:gap-0 md:flex-col ">
           <span className="text-black-opacity-60 text-sm">Paper Size:</span>
           <div className="flex gap-0.5 md:font-semibold text-base">
             <span className="text-sm md:text-base">{paperSize?.height}</span>
@@ -68,7 +65,7 @@ const PringtingOrderHistoryTable = ({
             <span className="text-sm md:text-base">{unit}</span>
           </div>
         </div>
-        <div className="md:w-1/5 flex gap-1 md:gap-0 md:flex-col">
+        <div className=" flex gap-1 md:gap-0 md:flex-col">
           <span className="text-sm md:text-base text-black-opacity-60">
             Paper Type:
           </span>
@@ -76,7 +73,7 @@ const PringtingOrderHistoryTable = ({
             {paperType}
           </span>
         </div>
-        <div className="md:w-1/5 flex md:flex-col gap-1 md:gap-0">
+        <div className=" flex md:flex-col gap-1 md:gap-0">
           <span className="text-sm md:text-base text-black-opacity-60">
             Printing Mode:
           </span>
@@ -84,7 +81,7 @@ const PringtingOrderHistoryTable = ({
             {printingMode}
           </span>
         </div>
-        <div className="md:w-2/5">
+        <div className="">
           <span className="text-sm md:text-base text-black-opacity-60">
             Attachment:
           </span>
@@ -100,7 +97,12 @@ const PringtingOrderHistoryTable = ({
           <span>{quantity} Items,</span>
           <span>Total: {totalPrice} QAR</span>
         </div>
-        <OrderTrackButton id={id} />
+        <Link
+          className="text-xs md:text-base shadow-md py-1 px-3 border rounded-lg bg-gradient-to-r from-[#C83B62] to-[#7F35CD] text-transparent bg-clip-text border-fuchsia-700 hover:scale-105 hover:duration-500 "
+          href={`/printing-request/printing-request-order-track/${id}`}
+        >
+          Order Track
+        </Link>
       </div>
     </div>
   );

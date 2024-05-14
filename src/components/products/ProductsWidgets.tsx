@@ -2,11 +2,11 @@
 import { useGetProductsQuery } from "@/redux/features/products/productsApi";
 import ProductCard from "../product/ProductCard";
 import { IProduct } from "@/types/productsType";
-import MostPopularSelectOption from "../UI/card/MostPopularSelectOption";
 import { useState } from "react";
 import { IconLoader } from "@tabler/icons-react";
 import { useAppSelector } from "@/redux/hook";
 import ProductCardSkeleton from "../shared/Skeleton/ProductCardSkeleton";
+import ProductsFilter from "./ProductsFilter";
 
 type SortOption = "MostPopular" | "Recent" | "HighPrice" | "LowPrice";
 
@@ -15,7 +15,7 @@ const ProductsWidgets = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [limit, setLimit] = useState(12);
 
-  const { options } = useAppSelector((state) => state.categoryOption);
+  const { options } = useAppSelector((state) => state.productsFilterOptions);
 
   // <== This fn is used to get products sorted by sortBy and sortOrder ==>
   const useSortedProducts = (sortBy: string, sortOrder: string) => {
@@ -24,7 +24,7 @@ const ProductsWidgets = () => {
     );
     return data;
   };
-  const { data, isLoading } = useGetProductsQuery("")
+  const { data, isLoading } = useGetProductsQuery("");
 
   const mostPopular = useSortedProducts("averageRating", "desc");
   const newProduct = useSortedProducts("createdAt", "desc");
@@ -55,41 +55,35 @@ const ProductsWidgets = () => {
       <div className="flex justify-between mb-10">
         <div className="flex items-center gap-1.5">
           <span className="text-black font-bold">
-            {productsData?.data?.length}
+            {productsData?.meta?.total}
           </span>
           <span className="text-sm">
-            {productsData?.data?.length && "Products Found"}
+            {data?.meta?.total && "Products Found"}
           </span>
         </div>
         <div className="">
-          <MostPopularSelectOption />
+          <ProductsFilter />
         </div>
       </div>
 
-      <div className="w-full md:place-items-start place-items-center flex items-center justify-center md:justify-between flex-wrap gap-5">
-        {
-
-          isLoading ? (
-            [...Array(10)].map((_, index) => {
-              return (
-                <ProductCardSkeleton key={index} />
-              )
+      <div className="grid grid-cols-product-grid md:gap-10 gap-5 ">
+        {isLoading
+          ? [...Array(12)].map((_, index) => {
+              return <ProductCardSkeleton key={index} />;
             })
-          ) :
-            productsData?.data
+          : productsData?.data
               ?.slice(0, visibleProducts)
               .map((product: IProduct) => (
                 <div key={product?._id}>
                   <ProductCard product={product} />
                 </div>
-              ))
-        }
+              ))}
       </div>
 
       {productsData?.data?.length > visibleProducts && (
         <div className="flex items-center justify-center mt-20">
           {loadingMore ? (
-            <span className="loading loading-dots loading-lg"></span>
+            <span className="loading loading-dots loading-lg bg-main-bg-color"></span>
           ) : (
             <button
               className="flex items-center gap-2 main-bg-color px-5 py-2.5 rounded-md text-white"

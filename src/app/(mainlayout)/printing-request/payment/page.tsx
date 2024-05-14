@@ -3,6 +3,8 @@ import BillingAddress from "@/components/PrintingRequest/BillingAddress";
 import EditButton from "@/components/PrintingRequest/EditButton";
 import PaymentMethod from "@/components/PrintingRequest/PaymentMethod";
 import PringtingRequestOrderCard from "@/components/PrintingRequest/PringtingRequestOrderCard";
+import PrintingRequestTotalOrderCard from "@/components/PrintingRequest/PrintingRequestTotalOrderCard";
+import { useAddPrintingMutation } from "@/redux/features/printing-request/printingRequestApi";
 import {
   useGetUserAddressQuery,
   useGetUserQuery,
@@ -15,8 +17,8 @@ import { IconMapPin } from "@tabler/icons-react";
 const Payment = () => {
   // <== Get User Personal Information ==>
   const { data: personalInformation } = useGetUserQuery("");
-
   const data = useAppSelector((state) => state.printingRequestOrder);
+
   return (
     <section className="lg:max-w-[1280px] w-full mx-auto  mb-7 ">
       <div className="mb-7">
@@ -51,7 +53,6 @@ const Payment = () => {
                 <IconMapPin width={22} height={22} stroke={1} />
               </span>
               <span className="w-/12 line-clamp-3 text-sm md:text-base">
-                {/* @ts-ignore */}
                 {data?.shippingAddress?.streetAddress}
               </span>
             </div>
@@ -81,9 +82,30 @@ const Payment = () => {
         </div>
 
         <div className="w-full md:w-4/12 ">
-          <PringtingRequestOrderCard
+          <PrintingRequestTotalOrderCard
+            btnDisable={
+              data?.billingAddress === undefined || data?.payment === undefined
+                ? "btn-disabled opacity-50 "
+                : data?.billingAddress?.selectedOption ===
+                    "differentBillingAddress" &&
+                  (data?.billingAddress?.firstName === undefined ||
+                    data?.billingAddress?.firstName === "" ||
+                    data?.billingAddress?.lastName === undefined ||
+                    data?.billingAddress?.lastName === "" ||
+                    data?.billingAddress?.streetAddress === undefined ||
+                    data?.billingAddress?.streetAddress === "" ||
+                    data?.billingAddress?.country === undefined ||
+                    data?.billingAddress?.country === "" ||
+                    data?.billingAddress?.zipCode === undefined ||
+                    data?.billingAddress?.zipCode === "" ||
+                    data?.billingAddress?.phoneNumber === undefined ||
+                    data?.billingAddress?.phoneNumber === "" ||
+                    data?.billingAddress?.state === undefined ||
+                    data?.billingAddress?.state === "")
+                ? "btn-disabled opacity-50 "
+                : ""
+            }
             buttonText={"Place Order"}
-            href={"order-places"}
           />
         </div>
       </div>

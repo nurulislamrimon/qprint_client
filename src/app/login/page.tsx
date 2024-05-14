@@ -14,43 +14,38 @@ import CustomInput from "@/components/shared/CustomInput";
 import PasswordInput from "@/components/shared/PasswordInput";
 import { useState } from "react";
 import Spinner from "@/components/shared/Spinner";
+import { toast } from "react-toastify";
 
 const Login = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [userLogin] = useUserLoginMutation();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { email, password } = useAppSelector((state) => state.login);
 
-  const [loading, setLoading] = useState(false);
-
-  let wrongPass;
   const onSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const res = await userLogin({ email, password }).unwrap();
-
       storeUserInfo({ accessToken: res?.data?.accessToken });
-      console.log(res, "API Response");
       if (res?.data?.accessToken) {
+        toast.success(res?.data?.success);
         router.push("/");
       }
     } catch (err: any) {
-      // console.error(err.message.length);
-      wrongPass = err.errorMessages;
+      toast.error(err.message);
+      setError(err?.data?.message);
     } finally {
       setLoading(false);
     }
   };
   return (
     <div className="h-screen flex justify-center items-center shadow-product-card-shadow bg-slate-200">
-      {
-        loading && (
-          <Spinner />
-        )
-      }
-      <div className="bg-white p-5 md:p-10 rounded-custom-5px text-center">
+      {loading && <Spinner />}
+      <div className="w-[500px] bg-white p-5 md:p-10 rounded-custom-5px text-center">
         <div className="flex items-center justify-center my-5">
           <Image
             src={logo}
@@ -76,16 +71,18 @@ const Login = () => {
                 onChange={(e) => dispatch(setLoginPassword(e.target.value))}
                 placeholder="Type Password"
               />
-              <div className="flex items-center justify-end mt-1">
+              <div className="flex flex-row-reverse items-center justify-between mt-1">
                 <Link
                   href={"/forget-password"}
-                  className="text-sm text-black-opacity-50 "
+                  className="text-sm text-black-opacity-70"
                 >
                   Forget Password
                 </Link>
+                <small className="text-xs text-red-500 flex items-center justify-center">
+                  {error}
+                </small>
               </div>
             </div>
-            <p>{wrongPass}</p>
 
             <button
               type="submit"
@@ -107,6 +104,14 @@ const Login = () => {
             </div>
           </div>
         </form>
+        <div className="flex items-center whitespace-nowrap">
+          <span className="text-black-opacity-50">
+            Don’t have your account?
+          </span>
+          <Link href={"/signup"} className="main-text-color font-bold ml-1">
+            Register Now
+          </Link>
+        </div>
         <Link
           className="flex items-center justify-center mt-5 font-bold"
           href={"/"}

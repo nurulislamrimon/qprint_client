@@ -1,19 +1,13 @@
 "use client";
-import {
-  IconBolt,
-  IconMinus,
-  IconPlus,
-  IconShoppingCart,
-} from "@tabler/icons-react";
+import { IconMinus, IconPlus, IconShoppingCart } from "@tabler/icons-react";
 import React, { useState } from "react";
 import SingleQuickOrder from "../quick-order/SingleQuickOrder";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/redux/features/cart/productCartSlice";
 
 const SpecificationCard = ({ specificationCard }: any) => {
-  console.log(specificationCard?._id, "asldkfalsdk");
+  const [quantity, setQuantity] = useState(1);
   const dispatch = useDispatch();
-  const [orderQuantity, setOrderQuantity] = useState(1);
 
   // <== Handle Add Product In Cart ==>
   const handleAddToCart = (event: React.MouseEvent, product: any) => {
@@ -25,7 +19,7 @@ const SpecificationCard = ({ specificationCard }: any) => {
         price: product?.variants[0].discountedPrice
           ? product?.variants[0].discountedPrice
           : product?.variants[0].sellingPrice,
-        orderQuantity: orderQuantity,
+        orderQuantity: quantity,
         productId: product?._id,
       })
     );
@@ -52,27 +46,25 @@ const SpecificationCard = ({ specificationCard }: any) => {
       <div className="flex items-center gap-5 mb-6">
         <div className="border border-gray-200 flex items-center gap-2 rounded-3xl p-2">
           <button
-            disabled={orderQuantity === 1 ? true : false}
-            onClick={() => setOrderQuantity(orderQuantity - 1)}
+            onClick={() => setQuantity(quantity - 1)}
             className={`p-2 bg-[#F2F2F2] rounded-full ${
-              orderQuantity === 1 ? "opacity-50" : ""
+              quantity === 1 && "btn-disabled"
             }`}
           >
-            {""}
             <IconMinus width={14} height={14} />
           </button>
-          <span>{orderQuantity}</span>
+          <span>{quantity}</span>
           <button
-            onClick={() => setOrderQuantity(orderQuantity + 1)}
-            className={`p-2 bg-[#F2F2F2] rounded-full`}
+            onClick={() => setQuantity(quantity + 1)}
+            className="p-2 bg-[#f2f2f2] rounded-full"
           >
-            {""}
             <IconPlus width={14} height={14} />
           </button>
         </div>
         <div>
           <SingleQuickOrder
             productId={specificationCard?._id}
+            quantity={quantity}
             btnStyle="py-3"
           />
         </div>
@@ -81,9 +73,9 @@ const SpecificationCard = ({ specificationCard }: any) => {
         onClick={(event: React.MouseEvent) =>
           handleAddToCart(event, specificationCard)
         }
-        className="w-full flex gap-1 justify-center items-center main-bg-color py-2 rounded-lg text-white"
+        className="w-full flex gap-1 justify-center items-center main-bg-color py-2.5 rounded-lg text-white text-sm uppercase"
       >
-        <IconShoppingCart width={20} stroke={2} height={20} className="" />
+        <IconShoppingCart width={19} stroke={2} height={19} className="" />
         Add To Cart
       </button>
     </div>

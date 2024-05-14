@@ -2,16 +2,17 @@
 import QServices from "./QServices";
 import ProductViewImage from "./ProductViewImage";
 import SpecificationDetails from "./SpecificationDetails";
-import RelatedProduct from "./RelatedProduct";
+import ProductCard from "../product/ProductCard";
 import {
   useGetProductByIdQuery,
   useGetProductsQuery,
 } from "@/redux/features/products/productsApi";
 import { IProduct } from "@/types/productsType";
 import Link from "next/link";
+import ProductCardSkeleton from "../shared/Skeleton/ProductCardSkeleton";
 
 const ProductView = ({ id }: { id: string }) => {
-  const { data } = useGetProductByIdQuery(id);
+  const { data, isLoading } = useGetProductByIdQuery(id);
   const productdata = data?.data;
 
   const { data: relatedData } = useGetProductsQuery(
@@ -43,13 +44,20 @@ const ProductView = ({ id }: { id: string }) => {
           </Link>
         </div>
         <div
-          className={`
-            "w-full md:place-items-start place-items-center flex items-center justify-center md:justify-normal flex-wrap gap-5 "
-              `}
-        >
-          {filteredRelatedProducts?.map((product: IProduct, index: any) => (
-            <RelatedProduct key={index} product={product} />
-          ))}
+          className="grid grid-cols-product-grid md:gap-10 gap-5 ">
+          {
+
+            isLoading ? (
+              [...Array(4)].map((_, index) => {
+                return (
+                  <ProductCardSkeleton key={index} />
+                )
+              })
+            ) :
+
+              filteredRelatedProducts?.map((product: IProduct, index: number) => (
+                <ProductCard key={index} product={product} />
+              ))}
         </div>
       </div>
       {/* == Product specification == */}

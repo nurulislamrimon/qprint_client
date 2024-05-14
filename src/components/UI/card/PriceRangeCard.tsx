@@ -5,10 +5,34 @@ import "rc-slider/assets/index.css";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { setPriceRange } from "@/redux/features/filterByPrice/FilterByPriceSlice";
 import { useGetProductsQuery } from "@/redux/features/products/productsApi";
+import { IProduct } from "@/types/productsType";
 
 const PriceRangeCard = () => {
   const dispatch = useAppDispatch();
   const priceRange = useAppSelector((state) => state.priceRangeSlice);
+  // <== This static limit is temporary ==>
+  const { data } = useGetProductsQuery("limit=38");
+  const products = data?.data;
+
+  function findMinMaxPrices(products: any) {
+    let minimumPrice = Infinity;
+    let maximumPrice = -Infinity;
+
+    products?.forEach((product: IProduct) => {
+      product?.variants?.forEach((variant) => {
+        if (variant?.sellingPrice < minimumPrice) {
+          minimumPrice = variant?.sellingPrice;
+        }
+        if (variant?.sellingPrice > maximumPrice) {
+          maximumPrice = variant?.sellingPrice;
+        }
+      });
+    });
+
+    return { minimumPrice, maximumPrice };
+  }
+
+  const { minimumPrice, maximumPrice } = findMinMaxPrices(products);
 
   const [range, setRange] = useState([
     priceRange.minPrice,
@@ -37,18 +61,13 @@ const PriceRangeCard = () => {
     WebkitTextFillColor: "transparent",
   };
 
-  // <== Get minimum and maximum price for price range ==>
-  const { data } = useGetProductsQuery("");
-
-  // Find the product with maximum selling quantity
-
   return (
     <div className=" p-6 mt-5 rounded-lg shadow-md">
       <h1 className="text-[#00000066] font-semibold text-base">PRICE RANGE</h1>
       <Slider
         range
-        min={0}
-        max={100000}
+        min={minimumPrice}
+        max={maximumPrice}
         value={range}
         onChange={handleRangeChange}
         className="w-full mt-4"
@@ -72,7 +91,6 @@ const PriceRangeCard = () => {
             type="text"
             name="priceRange"
             value={range[0]}
-            onChange={(e) => setRange([parseInt(e.target.value), range[1]])}
             className="w-[120px] p-2 rounded-lg border text-center focus:outline-none focus:border-fuchsia-700 focus:shadow-[0px_4px_24px_0px_rgba(127,_53,_205,_0.15)]"
           />
         </div>
@@ -82,7 +100,6 @@ const PriceRangeCard = () => {
             name="priceRange"
             type="text"
             value={range[1]}
-            onChange={(e) => setRange([range[0], parseInt(e.target.value)])}
             className="w-[120px] p-2 rounded-lg border text-center focus:outline-none focus:border-fuchsia-700 focus:shadow-[0px_4px_24px_0px_rgba(127,_53,_205,_0.15)]"
           />
         </div>

@@ -12,6 +12,7 @@ const PrintingRequest = () => {
   const isUserLoggedIn = isLoggedIn();
   const dispatch = useDispatch();
   const data = useAppSelector((state) => state.printingRequestOrder);
+
   // <== paperSize, paperType,colorMode API's ===>
   const { data: paperSize } = useGetPrintingRequestsQuery(
     "printingSetupType=Paper Size"
@@ -25,14 +26,11 @@ const PrintingRequest = () => {
 
   // <== get uploaded file fn ==>
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] || null;
+    const file = event.target.files?.[0];
     if (file) {
-      const { name } = file;
       dispatch(
         setPrintingRequest({
-          printingRequestFile: {
-            name,
-          },
+          printingRequestFile: file,
         })
       );
     }
@@ -66,7 +64,6 @@ const PrintingRequest = () => {
                     )
                   }
                   className={`${
-                    // @ts-ignore
                     item._id === data?.paperSize?._id
                       ? "shadow-[0px_4px_24px_0px_rgba(127,_53,_205,_0.15)] border border-fuchsia-700"
                       : ""
@@ -142,17 +139,28 @@ const PrintingRequest = () => {
                   onChange={handleFileUpload}
                   className="hidden"
                   type="file"
+                  accept="image/*"
                 />{" "}
                 <GradientUploadIcon />
-                file upload
+                File upload
               </label>
             </div>
+            {data?.printingRequestFile?.name && (
+              <p>You have added {data?.printingRequestFile?.name} </p>
+            )}
           </div>
         </div>
 
         <div className="w-full md:w-4/12 lg:w-4/12">
           <PringtingRequestOrderCard
-            data={data}
+            btnDisable={
+              data?.paperSize === undefined ||
+              data.paperTypeId === undefined ||
+              data?.printingColorModeId === undefined ||
+              data?.printingRequestFile === undefined
+                ? "btn-disabled opacity-50"
+                : ""
+            }
             buttonText={"Proceed To Checkout"}
             href={
               isUserLoggedIn ? "printing-request/your-information" : "/login"

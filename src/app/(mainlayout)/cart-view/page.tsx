@@ -16,29 +16,41 @@ import {
 import CartViewTotalCard from "@/components/cart-view/CartViewTotalCard";
 import ContinueShopping from "@/components/cart-view/ContinueShopping";
 import MultipleQuickOrder from "@/components/quick-order/MultipleQuickOrder";
-import { useGetShippingQuery } from "@/redux/features/shipping/shippinApi";
+import { useGetShippingQuery } from "@/redux/features/api/shipping/shippingApi";
+import { useGetUserAddressQuery } from "@/redux/features/user/user";
+import { isLoggedIn } from "@/services/auth.service";
 
 const CartView = () => {
   const { products, subTotal, total } = useAppSelector(
     (state) => state.productCartSlice
   );
   const getShipping = useGetShippingQuery("");
-
   const dispatch = useDispatch();
+  const { data: address } = useGetUserAddressQuery(`isDefault=true`);
+  // is user login
+  const isUserLoggedIn = isLoggedIn();
 
   const freeShippingMinOrderAmount =
     getShipping?.data?.data?.freeShippingMinOrderAmount;
-  const shippingInsideFee = getShipping?.data?.data?.inside;
 
   let shippingCharge;
 
-  if (freeShippingMinOrderAmount && subTotal) {
+  if (isUserLoggedIn && address?.data[0].state === "Doha") {
+    shippingCharge = getShipping?.data?.data?.inside;
+  } else if (isUserLoggedIn && address?.data[0].state !== "Doha") {
+    shippingCharge = getShipping?.data?.data?.outside;
+  } else if (isUserLoggedIn === false || address?.data[0].state === undefined) {
+    shippingCharge = getShipping?.data?.data?.inside;
+  }
+
+  if (getShipping?.data?.data?.isFreeShippingActive === false && subTotal) {
     if (freeShippingMinOrderAmount <= subTotal) {
       shippingCharge = 0;
     } else {
-      shippingCharge = shippingInsideFee;
+      shippingCharge;
     }
   }
+
   const discountPrice = total - subTotal;
   const calculateTotalWithDiscount = subTotal + shippingCharge;
 
@@ -172,39 +184,41 @@ const CartView = () => {
                 ))}
               </div>
               {/* -Price Range- */}
-              <div className="mt-5">
-                <div className="mb-5">
-                  <GetDiscountRange
-                    expectedAmount={
-                      getShipping?.data?.data?.freeShippingMinOrderAmount
-                    }
-                    totalAmount={subTotal}
-                  />
+              {getShipping?.data?.data?.isFreeShippingActive === false && (
+                <div className="mt-5">
+                  <div className="mb-5">
+                    <GetDiscountRange
+                      expectedAmount={
+                        getShipping?.data?.data?.freeShippingMinOrderAmount
+                      }
+                      totalAmount={subTotal}
+                    />
+                  </div>
+                  <div>
+                    {calculateTotalWithDiscount <
+                    getShipping?.data?.data?.freeShippingMinOrderAmount ? (
+                      <p className="">
+                        Spend{" "}
+                        <b className="main-text-color">
+                          {getShipping?.data?.data?.freeShippingMinOrderAmount}{" "}
+                          QAR
+                        </b>{" "}
+                        more to reach{" "}
+                        <b className="font-medium">FREE SHIPPING!</b>
+                      </p>
+                    ) : (
+                      <p className="flex gap-1 items-center justify-start text-[16px]">
+                        <span className="border rounded-full p-0.5 text-fuchsia-800 border-fuchsia-800">
+                          <IconCheck width={15} height={15} />
+                        </span>
+                        Congratulations! You’ve got free shipping.
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  {calculateTotalWithDiscount <
-                  getShipping?.data?.data?.freeShippingMinOrderAmount ? (
-                    <p className="">
-                      Spend{" "}
-                      <b className="main-text-color">
-                        {getShipping?.data?.data?.freeShippingMinOrderAmount}{" "}
-                        QAR
-                      </b>{" "}
-                      more to reach{" "}
-                      <b className="font-medium">FREE SHIPPING!</b>
-                    </p>
-                  ) : (
-                    <p className="flex gap-1 items-center justify-start text-[16px]">
-                      <span className="border rounded-full p-0.5 text-fuchsia-500 border-fuchsia-500">
-                        <IconCheck width={15} height={15} />
-                      </span>
-                      Congratulations! You’ve got free shipping.
-                    </p>
-                  )}
-                </div>
-              </div>
+              )}
             </div>
-            <div className="w-full md:max-w-[438px] h-[390px] border px-5 rounded-lg">
+            <div className="w-full md:max-w-[350px] h-[390px] border rounded-lg">
               {/* == Calculate Cart Total == */}
               <CartViewTotalCard
                 subTotal={subTotal}
@@ -213,7 +227,7 @@ const CartView = () => {
                 calculateTotalWithDiscount={calculateTotalWithDiscount}
               />
               {/* == Quick Orders == */}
-              <div className="w-full">
+              <div className="w-full px-5">
                 <MultipleQuickOrder products={products} subTotal={subTotal} />
               </div>
             </div>

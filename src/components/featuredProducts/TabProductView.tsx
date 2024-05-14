@@ -35,23 +35,23 @@ const TabProductView = () => {
 
   return (
     <div className=" mx-auto mt-4 w-full ">
-      <div className="flex justify-center items-center rounded-full gap-1 md:gap-2 lg:gap-2 text-sm md:text-base lg:text-base bg-[#F1F3F5] max-w-fit mx-auto ">
+      <div className="flex justify-center items-center rounded-full gap-1 md:gap-2 lg:gap-2 text-sm md:text-base lg:text-base bg-[#F1F3F5] max-w-fit mx-auto whitespace-nowrap ">
         <button
-          className={`px-6 py-2 rounded-full ${activeTab === "topSell" ? "border-fuchsia-700 border bg-white" : ""
+          className={`md:px-6 py-2.5 px-3.5 rounded-full ${activeTab === "topSell" ? "border-fuchsia-700 border bg-white" : ""
             }`}
           onClick={() => handleTabClick("topSell")}
         >
           TOP SELL
         </button>
         <button
-          className={`px-6 py-2  rounded-full ${activeTab === "popular" ? "border-fuchsia-700 border bg-white " : ""
+          className={`md:px-6 py-2.5 px-3.5  rounded-full ${activeTab === "popular" ? "border-fuchsia-700 border bg-white " : ""
             }`}
           onClick={() => handleTabClick("popular")}
         >
           POPULAR
         </button>
         <button
-          className={`px-6 py-2 rounded-full ${activeTab === "newest" ? "border-fuchsia-700 border bg-white" : ""
+          className={`md:px-6 py-2.5 px-3.5 rounded-full ${activeTab === "newest" ? "border-fuchsia-700 border bg-white" : ""
             }`}
           onClick={() => handleTabClick("newest")}
         >
@@ -70,7 +70,7 @@ const TabProductView = () => {
               See all &rarr;
             </Link>
 
-            <div className="w-full md:place-items-start place-items-center flex items-center justify-center md:justify-between flex-wrap gap-5 ">
+            <div className="grid grid-cols-product-grid md:gap-10 gap-5 ">
               {
                 loadingTopSelling ? (
                   [...Array(8)].map((_, index) => {
@@ -98,7 +98,7 @@ const TabProductView = () => {
               {" "}
               See all &rarr;
             </Link>
-            <div className="w-full md:place-items-start place-items-center flex items-center justify-center md:justify-normal flex-wrap gap-5 ">
+            <div className="grid grid-cols-product-grid md:gap-10 gap-5 ">
               {
                 loadingMostPopular
                   ? (
@@ -126,7 +126,7 @@ const TabProductView = () => {
               {" "}
               See all &rarr;
             </Link>
-            <div className="w-full md:place-items-start place-items-center flex items-center justify-center md:justify-normal flex-wrap gap-5 ">
+            <div className="grid grid-cols-product-grid md:gap-10 gap-5  ">
               {
                 loadingNewProduct ? (
                   [...Array(8)].map((_, index) => {

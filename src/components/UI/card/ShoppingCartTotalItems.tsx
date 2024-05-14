@@ -11,40 +11,79 @@ import {
   addToCart,
   removeOneFromCart,
 } from "@/redux/features/cart/productCartSlice";
-import { useGetShippingQuery } from "@/redux/features/shipping/shippinApi";
+import { useGetShippingQuery } from "@/redux/features/api/shipping/shippingApi";
+import { get } from "http";
+import { isLoggedIn } from "@/services/auth.service";
+import { useGetUserAddressQuery } from "@/redux/features/user/user";
 
 interface ShoppingCartProps {
   handleSubmit?: any;
   btnText?: string;
   btnLink?: string;
+  btnDisable?: string;
 }
 
 const ShoppingCartTotalItems = ({
   handleSubmit,
   btnText,
   btnLink,
+  btnDisable,
 }: ShoppingCartProps) => {
   const { products, subTotal, total } = useAppSelector(
     (state) => state.productCartSlice
   );
-  const dispatch = useDispatch();
-
   const getShipping = useGetShippingQuery("");
+  // default address
+  const { data: address } = useGetUserAddressQuery(`isDefault=true`);
+  // is user login
+  const isUserLoggedIn = isLoggedIn();
+  // shipping and billing data
+  const data = useAppSelector((state) => state.printingRequestOrder);
+
+  const dispatch = useDispatch();
 
   const freeShippingMinOrderAmount =
     getShipping?.data?.data?.freeShippingMinOrderAmount;
-  const shippingInsideFee = getShipping?.data?.data?.inside;
 
   let shippingCharge;
 
-  if (freeShippingMinOrderAmount && subTotal) {
+  if (isUserLoggedIn && address?.data[0].state === "Doha") {
+    shippingCharge = getShipping?.data?.data?.inside;
+  } else if (isUserLoggedIn && address?.data[0].state !== "Doha") {
+    shippingCharge = getShipping?.data?.data?.outside;
+  } else if (isUserLoggedIn === false || address?.data[0].state === undefined) {
+    shippingCharge = getShipping?.data?.data?.inside;
+  }
+
+  if (getShipping?.data?.data?.isFreeShippingActive === false && subTotal) {
     if (freeShippingMinOrderAmount <= subTotal) {
       shippingCharge = 0;
     } else {
-      shippingCharge = shippingInsideFee;
+      shippingCharge;
     }
   }
-  const calculateTotal = subTotal + shippingCharge;
+
+  if (
+    data?.shippingAddress?.oldAddress == false &&
+    data?.shippingAddress?.state === "Doha"
+  ) {
+    shippingCharge = getShipping?.data?.data?.inside;
+  } else if (
+    data?.shippingAddress?.oldAddress == false &&
+    data?.shippingAddress?.state !== "Doha"
+  ) {
+    shippingCharge = getShipping?.data?.data?.outside;
+  } else if (
+    data?.shippingAddress?.oldAddress == true &&
+    address?.data[0].state === "Doha"
+  ) {
+    shippingCharge = getShipping?.data?.data?.inside;
+  } else if (
+    data?.shippingAddress?.oldAddress == true &&
+    address?.data[0].state !== "Doha"
+  ) {
+    shippingCharge = getShipping?.data?.data?.outside;
+  }
 
   return (
     <div className=" border rounded-lg pb-5 mb-5">
@@ -123,7 +162,7 @@ const ShoppingCartTotalItems = ({
       <div className="flex justify-between items-center px-5 py-2   ">
         <small className="text-base text-gray-500">Discount </small>{" "}
         <p className="text-lg font-medium text-red-500 ">
-          {total - subTotal} QAR
+          {(total - subTotal).toFixed(2)} QAR
         </p>
       </div>
 
@@ -143,13 +182,13 @@ const ShoppingCartTotalItems = ({
         {btnText ? (
           <Link
             href={`/${btnLink}`}
-            className="bg-gradient-to-r from-[#C83B62] to-[#7F35CD] w-full rounded-lg py-3 text-white hover:scale-105 shadow-sm hover:duration-500 hover:shadow-lg text-center "
+            className={`${btnDisable} " bg-gradient-to-r from-[#C83B62] to-[#7F35CD] w-full rounded-lg py-3 text-white hover:scale-105 shadow-sm hover:duration-500 hover:shadow-lg text-center  "`}
           >
             {btnText}
           </Link>
         ) : (
           <button
-            className="bg-gradient-to-r from-[#C83B62] to-[#7F35CD] w-full rounded-lg py-3 text-white hover:scale-105 shadow-sm hover:duration-500 hover:shadow-lg text-center "
+            className={`" bg-gradient-to-r from-[#C83B62] to-[#7F35CD] w-full rounded-lg py-3 text-white hover:scale-105 shadow-sm hover:duration-500 hover:shadow-lg text-center " ${btnDisable} `}
             onClick={handleSubmit}
           >
             Place Order

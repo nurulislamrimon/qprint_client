@@ -1,11 +1,7 @@
 "use client";
 import CustomGlobalDrawer from "../shared/CustomGlobalDrawer";
 import ModalCloseBtn from "../shared/ModalCloseBtn";
-import {
-  IconArrowRight,
-  IconChevronLeft,
-  IconChevronRight,
-} from "@tabler/icons-react";
+import { IconArrowRight, IconChevronRight } from "@tabler/icons-react";
 import Image from "next/image";
 import { useAppSelector } from "@/redux/hook";
 import Link from "next/link";
@@ -15,13 +11,23 @@ import GetDiscountRange from "../ProductView/GetDiscountRange";
 import emptyCart from "@/assets/empty-card-photo.svg";
 import CartItem from "../cart-view/CartItem";
 import { IconShoppingCart } from "@tabler/icons-react";
-import { useGetShippingQuery } from "@/redux/features/shipping/shippinApi";
+import { useGetShippingQuery } from "@/redux/features/api/shipping/shippingApi";
+import { useGetUserAddressQuery } from "@/redux/features/user/user";
+import { isLoggedIn } from "@/services/auth.service";
 
 const CartDrawer = ({ setOpenCartDrawer, openCartDrawer }: any) => {
   const handleCloseDrawer = () => {
     setOpenCartDrawer(false);
   };
+
+  // is user login
+  const isUserLoggedIn = isLoggedIn();
+
+  // shipping fee
   const getShipping = useGetShippingQuery("");
+
+  // default shipping address if user login
+  const { data: address } = useGetUserAddressQuery(`isDefault=true`);
 
   const { products, subTotal, total } = useAppSelector(
     (state) => state.productCartSlice
@@ -29,17 +35,25 @@ const CartDrawer = ({ setOpenCartDrawer, openCartDrawer }: any) => {
 
   const freeShippingMinOrderAmount =
     getShipping?.data?.data?.freeShippingMinOrderAmount;
-  const shippingInsideFee = getShipping?.data?.data?.inside;
 
   let shippingCharge;
 
-  if (freeShippingMinOrderAmount && subTotal) {
+  if (isUserLoggedIn && address?.data[0].state === "Doha") {
+    shippingCharge = getShipping?.data?.data?.inside;
+  } else if (isUserLoggedIn && address?.data[0].state !== "Doha") {
+    shippingCharge = getShipping?.data?.data?.outside;
+  } else if (isUserLoggedIn === false || address?.data[0].state === undefined) {
+    shippingCharge = getShipping?.data?.data?.inside;
+  }
+
+  if (getShipping?.data?.data?.isFreeShippingActive === false && subTotal) {
     if (freeShippingMinOrderAmount <= subTotal) {
       shippingCharge = 0;
     } else {
-      shippingCharge = shippingInsideFee;
+      shippingCharge;
     }
   }
+
   const calculateTotal = subTotal + shippingCharge;
   return (
     <div>
@@ -61,7 +75,11 @@ const CartDrawer = ({ setOpenCartDrawer, openCartDrawer }: any) => {
               {/* --data container-- */}
               <div className="flex flex-col overflow-y-auto no-scrollbar h-[550px]">
                 {products?.map((product: any, index: number) => (
-                  <CartItem key={index} product={product} />
+                  <CartItem
+                    key={index}
+                    product={product}
+                    handleCloseDrawer={handleCloseDrawer}
+                  />
                 ))}
               </div>
               {/* --fixed data container-- */}
@@ -88,37 +106,44 @@ const CartDrawer = ({ setOpenCartDrawer, openCartDrawer }: any) => {
                   </span>
                 </div>
                 {/* --Price range and Free shipping-- */}
-                <div className="mb-5">
+
+                {getShipping?.data?.data?.isFreeShippingActive === false && (
                   <div className="mb-5">
-                    <GetDiscountRange
-                      expectedAmount={
-                        getShipping?.data?.data?.freeShippingMinOrderAmount
-                      }
-                      totalAmount={subTotal}
-                    />
+                    <div className="mb-5">
+                      <GetDiscountRange
+                        expectedAmount={
+                          getShipping?.data?.data?.freeShippingMinOrderAmount
+                        }
+                        totalAmount={subTotal}
+                      />
+                    </div>
+                    <div>
+                      {subTotal <
+                      getShipping?.data?.data?.freeShippingMinOrderAmount ? (
+                        <p className="text-center">
+                          Spend{" "}
+                          <b className="main-text-color">
+                            {
+                              getShipping?.data?.data
+                                ?.freeShippingMinOrderAmount
+                            }{" "}
+                            QAR
+                          </b>{" "}
+                          more to reach{" "}
+                          <b className="font-medium">FREE SHIPPING!</b>
+                        </p>
+                      ) : (
+                        <p className="text-center flex gap-1 items-center justify-center text-[16px]">
+                          <span className="border rounded-full p-1 text-fuchsia-800 border-fuchsia-800">
+                            <IconCheck width={15} height={15} />
+                          </span>
+                          Congratulations! You’ve got free shipping.
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    {subTotal <
-                    getShipping?.data?.data?.freeShippingMinOrderAmount ? (
-                      <p className="text-center">
-                        Spend{" "}
-                        <b className="main-text-color">
-                          {getShipping?.data?.data?.freeShippingMinOrderAmount}{" "}
-                          QAR
-                        </b>{" "}
-                        more to reach{" "}
-                        <b className="font-medium">FREE SHIPPING!</b>
-                      </p>
-                    ) : (
-                      <p className="text-center flex gap-1 items-center justify-center text-[16px]">
-                        <span className="border rounded-full p-1 text-fuchsia-500 border-fuchsia-500">
-                          <IconCheck width={15} height={15} />
-                        </span>
-                        Congratulations! You’ve got free shipping.
-                      </p>
-                    )}
-                  </div>
-                </div>
+                )}
+
                 {/* --Checkout & Quick Order btn-- */}
                 <div className="flex justify-between items-center gap-5">
                   <Link
@@ -149,7 +174,8 @@ const CartDrawer = ({ setOpenCartDrawer, openCartDrawer }: any) => {
                 Your Cart Is Empty!!
               </span>
               <Link
-                href={"/products"}
+                href={"/"}
+                onClick={handleCloseDrawer}
                 className="flex items-center gap-2 justify-center main-bg-color py-3.5 text-white rounded-[5px] w-full"
               >
                 Continue Shopping

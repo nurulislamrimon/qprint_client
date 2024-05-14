@@ -1,5 +1,4 @@
 "use client";
-import Facebook from "@/assets/FooterSVG/Facebook";
 import CustomInput from "@/components/shared/CustomInput";
 import PasswordInput from "@/components/shared/PasswordInput";
 import Spinner from "@/components/shared/Spinner";
@@ -23,38 +22,41 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [userSignUp] = useUserSignUpMutation();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [loading, setLoading] = useState(false);
-
 
   const { fullName, email, password, confirmPassword, qid, phoneNumber } =
     useAppSelector((state) => state.signUp);
 
-  const onSubmit = async (e: any) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+
     const formData = new FormData();
-    formData.append("email", email);
     formData.append("fullName", fullName);
+    formData.append("qid", qid);
+    formData.append("email", email);
+    formData.append("phoneNumber", phoneNumber);
     formData.append("password", password);
     formData.append("confirmPassword", confirmPassword);
-    formData.append("phoneNumber", phoneNumber);
-    formData.append("qid", qid);
 
     try {
       const res = await userSignUp(formData).unwrap();
-      // console.log(res);
       storeUserInfo({ accessToken: res?.data?.accessToken });
-      // console.log(res?.data?.accessToken);
       if (res?.data?.accessToken) {
-        router.push("/");
+        toast.success(res?.data?.success);
+        router.push("/verify-email");
       }
     } catch (err: any) {
-      console.error(err.message);
+      toast.error(err?.data?.message);
+      setError(err?.data?.message);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -62,11 +64,7 @@ const SignUp = () => {
 
   return (
     <div className="h-screen flex items-center justify-center">
-      {
-        loading && (
-          <Spinner />
-        )
-      }
+      {loading && <Spinner />}
       <div className="w-[500px] bg-white px-5 md:px-10 py-3 rounded-2xl shadow-lg border">
         <h4 className="font-bold text-center [font-size:_clamp(20px,5vw,26px)] mb-7">
           Sign Up
@@ -110,7 +108,11 @@ const SignUp = () => {
             placeholder="Retype Password"
             onChange={(e) => dispatch(setConfirmPassword(e.target.value))}
           />
-          <button className="main-bg-color text-white w-full py-3 rounded-lg mt-5">
+          {error && <small className="text-xs text-red-500">{error}</small>}
+          <button
+            type="submit"
+            className="main-bg-color text-white w-full py-3 rounded-lg mt-5"
+          >
             Create New Account
           </button>
         </form>

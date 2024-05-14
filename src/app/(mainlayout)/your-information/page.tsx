@@ -2,6 +2,7 @@
 import ReturnToCardButton from "@/components/PrintingRequest/ReturnToCardButton";
 import CustomInput from "@/components/shared/CustomInput";
 import ShoppingCartTotalItems from "@/components/UI/card/ShoppingCartTotalItems";
+import { qatarStates } from "@/constants/qatarState";
 import { setPrintingRequest } from "@/redux/features/printing-request/postPrintingRequestSlice";
 import {
   useGetUserAddressQuery,
@@ -15,7 +16,8 @@ import { useState } from "react";
 const YourInformation = () => {
   const isUserLoggedIn = isLoggedIn();
   const dispatch = useAppDispatch();
-  const [addNewShipping, setAddNewShipping] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+
   const data = useAppSelector((state) => state.printingRequestOrder);
 
   // <== Get User Address ==>
@@ -24,19 +26,42 @@ const YourInformation = () => {
   // <== Get User Personal Information ==>
   const { data: personalInformation } = useGetUserQuery("");
 
-  const handleAddShipping = () => {
-    setAddNewShipping((prevState) => !prevState);
+  const handleOptionChange = (event: any) => {
+    setSelectedOption(event.target.value);
+
+    if (event.target.value === "addedAddress") {
+      dispatch(
+        setPrintingRequest({
+          ...data,
+          shippingAddress: {
+            ...data.shippingAddress,
+            oldAddress: true,
+          },
+        })
+      );
+    } else {
+      dispatch(
+        setPrintingRequest({
+          ...data,
+          shippingAddress: {
+            ...data.shippingAddress,
+            oldAddress: false,
+            state: "Doha",
+          },
+        })
+      );
+    }
   };
 
   return (
-    <section className="lg:w-[1280px] w-full mx-auto  mb-7">
+    <section className="mb-7">
       <div className="mb-7">
         <h3 className="[font-size:_clamp(1.2em,4vw,1.8em)] font-bold">
           Your Information
         </h3>
       </div>
-      <div className="flex flex-col md:flex-row lg:flex-row gap-7 justify-between">
-        <div className="flex flex-col w-full md:w-8/12 lg:w-8/12 -5 ">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
+        <div className="flex flex-col w-full md:col-span-2 ">
           <div className=" border rounded-lg ">
             {/* == Click here to login btn == */}
             {!isUserLoggedIn && (
@@ -55,28 +80,57 @@ const YourInformation = () => {
               <p className="text-base text-gray-500 mb-5">
                 Contact information
               </p>
-              <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-7 gap-5 w-full mb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-7 gap-5 w-full mb-8  ">
                 <CustomInput
                   label="Email"
                   type="email"
                   value={personalInformation?.data?.email}
                   placeholder="Enter Your Email"
+                  customClassName="opacity-80 "
+                  inputStyle="focus:border-gray-200"
+                  readonly
                 />
                 <CustomInput
                   label="Phone Number"
                   type="number"
                   value={personalInformation?.data?.phoneNumber}
                   placeholder="Enter Your Number"
+                  customClassName="opacity-80 "
+                  inputStyle="focus:border-gray-200"
+                  readonly
                 />
               </div>
 
               {/* == Existing User Address == */}
-              {isUserLoggedIn && (
+              {isUserLoggedIn && address !== undefined && (
+                <label className="inline-flex items-center mb-4 cursor-pointer  ">
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white  flex items-center justify-center border-fuchsia-700 border-2 ${selectedOption === "addedAddress"
+                        ? "border-fuchsia-700 border-2"
+                        : ""
+                      }`}
+                  >
+                    {selectedOption === "addedAddress" && (
+                      <div className="h-3 w-3 bg-gradient-to-r from-[#C83B62] to-[#7F35CD] rounded-full"></div>
+                    )}
+                  </div>
+                  <span className="ml-2">Use Default Address </span>
+                  <input
+                    type="radio"
+                    value="addedAddress"
+                    name="addedAddress"
+                    checked={selectedOption === "addedAddress"}
+                    onChange={handleOptionChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+              {isUserLoggedIn && address !== undefined && (
                 <>
                   {isLoading ? (
                     <p>Loading...</p>
                   ) : (
-                    <div className="flex flex-col mb-5 border p-3 rounded-md">
+                    <div className="flex flex-col mb-5 border-b p-3 rounded-md">
                       <span className="text-black-opacity-60">
                         Shipping Address
                       </span>
@@ -91,26 +145,45 @@ const YourInformation = () => {
 
               {/* == If user logged in then dropdown for new shipping address, else create an account == */}
               {isUserLoggedIn && (
-                <div className="mb-5 flex gap-1.5 items-center">
-                  <input
-                    onClick={handleAddShipping}
-                    title="radio"
-                    type="radio"
-                    className="checked"
-                  />
-                  <span>Add new shipping address</span>
+                <div>
+                  <label className="inline-flex items-center gap-2  ">
+                    <div
+                      className={`w-5 h-5 rounded-full bg-white  flex items-center justify-center border-fuchsia-700 border-2 ${selectedOption === "address"
+                          ? "border-fuchsia-700 border-2"
+                          : ""
+                        }`}
+                    >
+                      {selectedOption === "address" && (
+                        <div className="h-3 w-3 bg-gradient-to-r from-[#C83B62] to-[#7F35CD] rounded-full"></div>
+                      )}
+                    </div>
+                    <input
+                      type="radio"
+                      value="address"
+                      checked={selectedOption === "address"}
+                      onChange={handleOptionChange}
+                      className="hidden"
+                    />
+                    <span className="">Add New Shipping Address</span>
+                  </label>
                 </div>
               )}
 
               {/* == shipping address or shipping information == */}
-              {addNewShipping && (
-                <div>
+              {selectedOption === "address" && (
+                <div className="mt-3.5">
                   <div className="grid grid-cols-1 lg:grid-cols-2 lg:gap-7 gap-5 w-full">
                     <CustomInput
                       label="First Name"
                       type="text"
                       name="firstName"
-                      // @ts-ignore
+                      inputStyle={
+                        (data?.shippingAddress?.oldAddress === false &&
+                          data?.shippingAddress?.firstName === undefined) ||
+                          data?.shippingAddress?.firstName === ""
+                          ? "border border-red-500"
+                          : " "
+                      }
                       value={data?.shippingAddress?.firstName}
                       placeholder={"First Name"}
                       onChange={(e) =>
@@ -118,7 +191,6 @@ const YourInformation = () => {
                           setPrintingRequest({
                             ...data,
                             shippingAddress: {
-                              // @ts-ignore
                               ...data.shippingAddress,
                               [e.target.name]: e.target.value,
                             },
@@ -130,7 +202,13 @@ const YourInformation = () => {
                       label="Last Name"
                       type="text"
                       name="lastName"
-                      // @ts-ignore
+                      inputStyle={
+                        (data?.shippingAddress?.oldAddress === false &&
+                          data?.shippingAddress?.lastName === undefined) ||
+                          data?.shippingAddress?.lastName === ""
+                          ? "border border-red-500"
+                          : " "
+                      }
                       value={data?.shippingAddress?.lastName}
                       placeholder={"Last Name"}
                       onChange={(e) =>
@@ -138,7 +216,6 @@ const YourInformation = () => {
                           setPrintingRequest({
                             ...data,
                             shippingAddress: {
-                              // @ts-ignore
                               ...data.shippingAddress,
                               [e.target.name]: e.target.value,
                             },
@@ -147,18 +224,23 @@ const YourInformation = () => {
                       }
                     />
                     <CustomInput
-                      label="Phone Number"
-                      type="text"
+                      label="Phone Number (Make sure Valid Number)"
+                      type="number"
                       name="phoneNumber"
-                      // @ts-ignore
+                      inputStyle={
+                        (data?.shippingAddress?.oldAddress === false &&
+                          data?.shippingAddress?.phoneNumber === undefined) ||
+                          data?.shippingAddress?.phoneNumber === ""
+                          ? "border border-red-500"
+                          : " "
+                      }
                       value={data?.shippingAddress?.phoneNumber}
-                      placeholder={"Phone Number"}
+                      placeholder={"974*****"}
                       onChange={(e) =>
                         dispatch(
                           setPrintingRequest({
                             ...data,
                             shippingAddress: {
-                              // @ts-ignore
                               ...data.shippingAddress,
                               [e.target.name]: e.target.value,
                             },
@@ -170,7 +252,13 @@ const YourInformation = () => {
                       label="Street Address"
                       type="text"
                       name="streetAddress"
-                      // @ts-ignore
+                      inputStyle={
+                        (data?.shippingAddress?.oldAddress === false &&
+                          data?.shippingAddress?.streetAddress === undefined) ||
+                          data?.shippingAddress?.streetAddress === ""
+                          ? "border border-red-500"
+                          : " "
+                      }
                       value={data?.shippingAddress?.streetAddress}
                       placeholder="Your Street Address"
                       onChange={(e) =>
@@ -178,7 +266,6 @@ const YourInformation = () => {
                           setPrintingRequest({
                             ...data,
                             shippingAddress: {
-                              // @ts-ignore
                               ...data.shippingAddress,
                               [e.target.name]: e.target.value,
                             },
@@ -186,31 +273,52 @@ const YourInformation = () => {
                         )
                       }
                     />
-                    <CustomInput
-                      label="State"
-                      type="text"
-                      name="state"
-                      // @ts-ignore
-                      value={data?.shippingAddress?.state}
-                      placeholder="Your State"
-                      onChange={(e) =>
-                        dispatch(
-                          setPrintingRequest({
-                            ...data,
-                            shippingAddress: {
-                              // @ts-ignore
-                              ...data.shippingAddress,
-                              [e.target.name]: e.target.value,
-                            },
-                          })
-                        )
-                      }
-                    />
+
+                    {/* state */}
+
+                    <label htmlFor="state">
+                      Select State
+                      <select
+                        defaultValue={"Doha"}
+                        name="state"
+                        id="state"
+                        onChange={(e) =>
+                          dispatch(
+                            setPrintingRequest({
+                              ...data,
+                              shippingAddress: {
+                                ...data.shippingAddress,
+                                [e.target.name]: e.target.value,
+                              },
+                            })
+                          )
+                        }
+                        className="w-full border border-gray-200 px-3.5 py-3 focus:outline-none focus:border-fuchsia-800 rounded-md"
+                      >
+                        {qatarStates?.map((state) => (
+                          <option
+                            key={state}
+                            value={state}
+                            selected={state === "Doha"}
+                            defaultValue={"Doha"}
+                          >
+                            {state}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
                     <CustomInput
                       label="Country"
                       type="text"
                       name="country"
-                      // @ts-ignore
+                      inputStyle={
+                        (data?.shippingAddress?.oldAddress === false &&
+                          data?.shippingAddress?.country === undefined) ||
+                          data?.shippingAddress?.country === ""
+                          ? "border border-red-500"
+                          : " "
+                      }
                       value={data?.shippingAddress?.country}
                       placeholder={"Country"}
                       onChange={(e) =>
@@ -218,7 +326,6 @@ const YourInformation = () => {
                           setPrintingRequest({
                             ...data,
                             shippingAddress: {
-                              // @ts-ignore
                               ...data.shippingAddress,
                               [e.target.name]: e.target.value,
                             },
@@ -230,7 +337,13 @@ const YourInformation = () => {
                       label=" Company Name ( Optional )"
                       type="text"
                       name="companyName"
-                      // @ts-ignore
+                      inputStyle={
+                        (data?.shippingAddress?.oldAddress === false &&
+                          data?.shippingAddress?.companyName === undefined) ||
+                          data?.shippingAddress?.companyName === ""
+                          ? "border border-red-500"
+                          : " "
+                      }
                       value={data?.shippingAddress?.companyName}
                       placeholder="Company Name"
                       onChange={(e) =>
@@ -238,7 +351,6 @@ const YourInformation = () => {
                           setPrintingRequest({
                             ...data,
                             shippingAddress: {
-                              // @ts-ignore
                               ...data.shippingAddress,
                               [e.target.name]: e.target.value,
                             },
@@ -250,17 +362,23 @@ const YourInformation = () => {
                       label="ZipCode"
                       type="text"
                       name="zipCode"
-                      // @ts-ignore
+                      inputStyle={
+                        (data?.shippingAddress?.oldAddress === false &&
+                          data?.shippingAddress?.zipCode === undefined) ||
+                          data?.shippingAddress?.zipCode === ""
+                          ? "border border-red-500"
+                          : " "
+                      }
                       value={data?.shippingAddress?.zipCode}
                       placeholder="Your ZipCode"
                       onChange={(e) =>
                         dispatch(
                           setPrintingRequest({
                             ...data,
-                            // @ts-ignore
+
                             shippingAddress: {
                               ...(data.shippingAddress || {}),
-                              [e.target.name]: parseFloat(e.target.value),
+                              [e.target.name]: e.target.value,
                             },
                           })
                         )
@@ -275,9 +393,8 @@ const YourInformation = () => {
                           setPrintingRequest({
                             ...data,
                             shippingAddress: {
-                              // @ts-ignore
                               ...data.shippingAddress,
-                              // @ts-ignore
+
                               isDefault: !data.shippingAddress.isDefault,
                             },
                           })
@@ -285,7 +402,6 @@ const YourInformation = () => {
                       }
                       title="inputradio"
                       type="checkbox"
-                      // @ts-ignore
                       checked={data?.shippingAddress?.isDefault}
                     />
 
@@ -303,14 +419,33 @@ const YourInformation = () => {
         </div>
 
         {/* total order card */}
-        <div className="w-full md:w-4/12 lg:w-4/12">
+        <div className="">
           <ShoppingCartTotalItems
             btnText="Continue Payment"
             btnLink="payment"
+            btnDisable={
+              data?.shippingAddress === undefined
+                ? "btn-disabled opacity-50"
+                : data?.shippingAddress?.oldAddress === false &&
+                  (data?.shippingAddress?.firstName === undefined ||
+                    data?.shippingAddress?.firstName === "" ||
+                    data?.shippingAddress?.lastName === undefined ||
+                    data?.shippingAddress?.lastName === "" ||
+                    data?.shippingAddress?.streetAddress === undefined ||
+                    data?.shippingAddress?.streetAddress === "" ||
+                    data?.shippingAddress?.country === undefined ||
+                    data?.shippingAddress?.country === "" ||
+                    data?.shippingAddress?.zipCode === undefined ||
+                    data?.shippingAddress?.zipCode === "" ||
+                    data?.shippingAddress?.phoneNumber === undefined ||
+                    data?.shippingAddress?.phoneNumber === "")
+                  ? "btn-disabled opacity-50"
+                  : ""
+            }
           />
         </div>
 
-        <div className="block md:hidden lg:hidden w-full ">
+        <div className="block md:hidden w-full ">
           <ReturnToCardButton />
         </div>
       </div>

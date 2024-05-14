@@ -6,6 +6,7 @@ import ShoppingCartTotalItems from "@/components/UI/card/ShoppingCartTotalItems"
 import { resetCart } from "@/redux/features/cart/productCartSlice";
 import { useOnlineOrderPostMutation } from "@/redux/features/online-order/online-orderApi";
 import {
+  useAddShippingAddressMutation,
   useGetUserAddressQuery,
   useGetUserQuery,
 } from "@/redux/features/user/user";
@@ -13,50 +14,89 @@ import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { IconMail } from "@tabler/icons-react";
 import { IconPhone } from "@tabler/icons-react";
 import { IconMapPin } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "react-toastify";
 
 const Payment = () => {
+  const [loading, setLoading] = useState(false);
+
   // <== Get User Personal Information ==>
   const { data: personalInformation } = useGetUserQuery("");
-
+  // getting default address
   const { data: address, isLoading } = useGetUserAddressQuery(`isDefault=true`);
-  const dispatch = useAppDispatch();
-
+  //cart items
   const { products } = useAppSelector((state) => state.productCartSlice);
+  // shippinng and billing
   const data = useAppSelector((state) => state.printingRequestOrder);
-
+  //if user select new shipping address and make it default
+  const [addShippingInfo] = useAddShippingAddressMutation();
+  // order mutation
   const [onlineOrder] = useOnlineOrderPostMutation();
+
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
+  // zip code string to number
+  const shippingAddress = {
+    ...data?.shippingAddress,
+    zipCode: parseInt(data?.shippingAddress?.zipCode),
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
 
     const value = {
       orderItems: products,
-      shippingAddress: data?.shippingAddress
-        ? data?.shippingAddress
-        : address?.data[0],
-      payment: {
-        paymentStatus: "Unpaid",
-        paymentMethod: "COD",
-      },
+      shippingAddress:
+        data?.shippingAddress?.oldAddress === false
+          ? shippingAddress
+          : address?.data[0],
+      payment: data?.payment,
+      BillingAddress:
+        data?.billingAddress?.selectedOption === "differentBillingAddress"
+          ? data?.billingAddress
+          : address?.data[0],
     };
 
     try {
-      const res = await onlineOrder(value);
-      dispatch(resetCart());
-      if ("data" in res) {
-        toast.success((res as { data: any }).data.message);
+      // updating shipping address
+      if (
+        data?.shippingAddress?.oldAddress === false &&
+        data?.shippingAddress?.isDefault === true
+      ) {
+        const res = await addShippingInfo({ data: shippingAddress });
       }
+      const res = await onlineOrder(value);
+      console.log(res);
+      if ("data" in res) {
+        if (res?.data?.data?.payment?.paymentMethod === "COD") {
+          toast.success((res as { data: any }).data.message);
+          router.push(`/thank-you/${res?.data?.data?._id}`);
+        } else {
+          router.push(`${res?.data?.data?.resultObj?.payUrl}`);
+        }
+        dispatch(resetCart());
+      }
+
       if ("error" in res) {
-        toast.error((res as { error: any }).error.message);
+        // @ts-ignore
+        toast.error(error?.data);
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <section className="lg:max-w-[1280px] w-full mx-auto  mb-7">
+    <section
+      className={`${
+        loading && "opacity-50 pointer-events-none"
+      } "lg:max-w-[1280px] w-full mx-auto  mb-7" `}
+    >
       <div className="mb-7">
         <h3 className="[font-size:_clamp(1.2em,4vw,1.8em)] font-bold">
           Payment
@@ -81,9 +121,6 @@ const Payment = () => {
                 </div>
               </div>
             </div>
-            <div className="w-2/12">
-              <EditButton />
-            </div>
           </div>
           {/*== shipping to ==*/}
 
@@ -94,13 +131,9 @@ const Payment = () => {
                 <IconMapPin width={22} height={22} stroke={1} />
               </span>
               <span className="w-/12 line-clamp-3 text-sm md:text-base">
-                {
-                  // @ts-ignore
-                  data?.shippingAddress?.streetAddress
-                    ? // @ts-ignore
-                      data?.shippingAddress?.streetAddress
-                    : address?.data[0]?.streetAddress
-                }
+                {data?.shippingAddress?.streetAddress
+                  ? data?.shippingAddress?.streetAddress
+                  : address?.data[0]?.streetAddress}
               </span>
             </div>
             <div className="w-2/12">
@@ -129,7 +162,31 @@ const Payment = () => {
         </div>
 
         <div className="w-full md:w-4/12 ">
-          <ShoppingCartTotalItems handleSubmit={handleSubmit} />
+          <ShoppingCartTotalItems
+            btnDisable={
+              data?.billingAddress === undefined || data?.payment === undefined
+                ? "btn-disabled opacity-50 "
+                : data?.billingAddress?.selectedOption ===
+                    "differentBillingAddress" &&
+                  (data?.billingAddress?.firstName === undefined ||
+                    data?.billingAddress?.firstName === "" ||
+                    data?.billingAddress?.lastName === undefined ||
+                    data?.billingAddress?.lastName === "" ||
+                    data?.billingAddress?.streetAddress === undefined ||
+                    data?.billingAddress?.streetAddress === "" ||
+                    data?.billingAddress?.country === undefined ||
+                    data?.billingAddress?.country === "" ||
+                    data?.billingAddress?.zipCode === undefined ||
+                    data?.billingAddress?.zipCode === "" ||
+                    data?.billingAddress?.phoneNumber === undefined ||
+                    data?.billingAddress?.phoneNumber === "" ||
+                    data?.billingAddress?.state === undefined ||
+                    data?.billingAddress?.state === "")
+                ? "btn-disabled opacity-50 "
+                : ""
+            }
+            handleSubmit={handleSubmit}
+          />
         </div>
       </div>
     </section>
